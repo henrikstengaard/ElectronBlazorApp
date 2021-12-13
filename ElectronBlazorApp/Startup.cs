@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
@@ -11,6 +12,8 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using ElectronBlazorApp.Data;
 using ElectronNET.API;
+using ElectronNET.API.Entities;
+using MudBlazor.Services;
 
 namespace ElectronBlazorApp
 {
@@ -27,6 +30,7 @@ namespace ElectronBlazorApp
         // For more information on how to configure your application, visit https://go.microsoft.com/fwlink/?LinkID=398940
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddMudServices();
             services.AddRazorPages();
             services.AddServerSideBlazor();
             services.AddSingleton<WeatherForecastService>();
@@ -65,7 +69,10 @@ namespace ElectronBlazorApp
         
         private async Task CreateWindow()  
         {
-            var window = await Electron.WindowManager.CreateWindowAsync();  
+            var window = await Electron.WindowManager.CreateWindowAsync(new BrowserWindowOptions
+            {
+                AutoHideMenuBar = true
+            });  
             window.OnClosed += () => {  
                 Electron.App.Quit();  
             };

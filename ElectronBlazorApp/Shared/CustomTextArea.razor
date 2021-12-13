@@ -1,0 +1,19 @@
+﻿<textarea 
+    rows="2" 
+    style="resize:both; width: 100%; height: calc(100vh - 50px);"
+    value="@Value"
+    @oninput="@OnInputChange">
+</textarea>
+
+@code {
+    [Parameter]
+    public string Value { get; set; }
+
+    [Parameter]
+    public EventCallback<string> ValueChanged { get; set; }
+    private async Task OnInputChange(ChangeEventArgs args )
+    {
+        Value = (string)args.Value;
+        await ValueChanged.InvokeAsync(Value);
+    }
+}
