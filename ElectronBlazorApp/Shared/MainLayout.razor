@@ -21,7 +21,7 @@
                 <img class="icon" src="icons/max-w-10.png" srcset="icons/max-w-10.png 1x, icons/max-w-12.png 1.25x, icons/max-w-15.png 1.5x, icons/max-w-15.png 1.75x, icons/max-w-20.png 2x, icons/max-w-20.png 2.25x, icons/max-w-24.png 2.5x, icons/max-w-30.png 3x, icons/max-w-30.png 3.5x" draggable="false" alt="Maximize" @onclick="Maximize"/>
             </div>
             <div class="button" id="restore-button">
-                <img class="icon" src="icons/restore-w-10.png" srcset="icons/restore-w-10.png 1x, icons/restore-w-12.png 1.25x, icons/restore-w-15.png 1.5x, icons/restore-w-15.png 1.75x, icons/restore-w-20.png 2x, icons/restore-w-20.png 2.25x, icons/restore-w-24.png 2.5x, icons/restore-w-30.png 3x, icons/restore-w-30.png 3.5x" draggable="false" alt="Restore" @onclick="Restore"/>
+                <img class="icon" src="icons/restore-w-10.png" srcset="icons/restore-w-10.png 1x, icons/restore-w-12.png 1.25x, icons/restore-w-15.png 1.5x, icons/restore-w-15.png 1.75x, icons/restore-w-20.png 2x, icons/restore-w-20.png 2.25x, icons/restore-w-24.png 2.5x, icons/restore-w-30.png 3x, icons/restore-w-30.png 3.5x" draggable="false" alt="Restore" @onclick="Maximize"/>
             </div>
             <div class="button" id="close-button">
                 <img class="icon" src="icons/close-w-10.png" srcset="icons/close-w-10.png 1x, icons/close-w-12.png 1.25x, icons/close-w-15.png 1.5x, icons/close-w-15.png 1.75x, icons/close-w-20.png 2x, icons/close-w-20.png 2.25x, icons/close-w-24.png 2.5x, icons/close-w-30.png 3x, icons/close-w-30.png 3.5x" draggable="false" alt="Close" @onclick="Close"/>
@@ -37,50 +37,43 @@
 
 @code {
 
-    private void Minimize()
+    private async Task Minimize()
     {
         if (!HybridSupport.IsElectronActive)
         {
             return;
         }
-        Electron.WindowManager.BrowserWindows.First().Minimize();
+        await InvokeAsync(() => Electron.WindowManager.BrowserWindows.First().Minimize());
     }
 
-    private void Maximize()
-    {
-        if (!HybridSupport.IsElectronActive)
-        {
-            return;
-        }
-        Electron.WindowManager.BrowserWindows.First().Maximize();
-    }
-
-    private void Restore()
+    private async Task Maximize()
     {
         if (!HybridSupport.IsElectronActive)
         {
             return;
         }
 
-        if (_appState.Maximized)
+        var mainWindow = Electron.WindowManager.BrowserWindows.First();
+        
+        if (await mainWindow.IsMaximizedAsync())
         {
-            Electron.WindowManager.BrowserWindows.First().Unmaximize();
+            await InvokeAsync(() => Electron.WindowManager.BrowserWindows.First().Unmaximize());
             _appState.Maximized = false;
         }
         else
         {
-            Electron.WindowManager.BrowserWindows.First().Maximize();
+            await InvokeAsync(() => Electron.WindowManager.BrowserWindows.First().Maximize());
             _appState.Maximized = true;
         }
         _appState.NotifyStateChanged();
     }
 
-    private void Close()
+    private async Task Close()
     {
         if (!HybridSupport.IsElectronActive)
         {
             return;
         }
-        Electron.WindowManager.BrowserWindows.First().Close();
+        await InvokeAsync(() => Electron.WindowManager.BrowserWindows.First().Close());
     }
 }

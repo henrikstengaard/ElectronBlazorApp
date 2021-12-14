@@ -74,8 +74,10 @@ namespace ElectronBlazorApp
             }
         }
         
-        private async Task CreateWindow()  
+        private async Task CreateWindow()
         {
+            var iconPath = Path.Combine(_env.WebRootPath, "favicon.ico");
+            Console.WriteLine($"icon = '{iconPath}'");
             var window = await Electron.WindowManager.CreateWindowAsync(new BrowserWindowOptions
             {
                 Width = 1074,
@@ -87,7 +89,7 @@ namespace ElectronBlazorApp
                 {
                     NodeIntegration = true
                 },
-                //Icon = Path.Combine(_env.ContentRootPath, "favicon.ico")
+                Icon = iconPath
             });
             window.OnClosed += () => {  
                 Electron.App.Quit();  
