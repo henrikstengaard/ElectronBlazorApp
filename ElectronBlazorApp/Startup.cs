@@ -19,9 +19,12 @@ namespace ElectronBlazorApp
 {
     public class Startup
     {
-        public Startup(IConfiguration configuration)
+        private readonly IWebHostEnvironment _env;
+        
+        public Startup(IConfiguration configuration, IWebHostEnvironment env)
         {
             Configuration = configuration;
+            _env = env;
         }
 
         public IConfiguration Configuration { get; }
@@ -84,6 +87,7 @@ namespace ElectronBlazorApp
                 {
                     NodeIntegration = true
                 },
+                //Icon = Path.Combine(_env.ContentRootPath, "favicon.ico")
             });
             window.OnClosed += () => {  
                 Electron.App.Quit();  

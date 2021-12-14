@@ -1,14 +1,86 @@
 @using ElectronNET.API
+@using ElectronBlazorApp.Data
 @inherits LayoutComponentBase
-<MudThemeProvider />
+@inject AppState _appState;
+<MudThemeProvider/>
 <MudDialogProvider/>
 <MudSnackbarProvider/>
-<MudLayout>
-    <MudAppBar>
-        Blazor Notes
-        <NavMenu/>
-    </MudAppBar>
-    <MudMainContent>
-        @Body
-    </MudMainContent>
-</MudLayout>
+
+<header id="titlebar">
+    <div id="drag-region">
+        <div id="window-title">
+            <img id="window-icon" src="icons/app-icon-128x128.png" height="16px" alt="Icon"/>
+            <span>Blazing Notes</span>
+        </div>
+
+        <div id="window-controls">
+            <div class="button" id="minimize-button">
+                <img class="icon" src="icons/min-w-10.png" srcset="icons/min-w-10.png 1x, icons/min-w-12.png 1.25x, icons/min-w-15.png 1.5x, icons/min-w-15.png 1.75x, icons/min-w-20.png 2x, icons/min-w-20.png 2.25x, icons/min-w-24.png 2.5x, icons/min-w-30.png 3x, icons/min-w-30.png 3.5x" draggable="false" alt="Minimize" @onclick="Minimize"/>
+            </div>
+            <div class="button" id="maximize-button">
+                <img class="icon" src="icons/max-w-10.png" srcset="icons/max-w-10.png 1x, icons/max-w-12.png 1.25x, icons/max-w-15.png 1.5x, icons/max-w-15.png 1.75x, icons/max-w-20.png 2x, icons/max-w-20.png 2.25x, icons/max-w-24.png 2.5x, icons/max-w-30.png 3x, icons/max-w-30.png 3.5x" draggable="false" alt="Maximize" @onclick="Maximize"/>
+            </div>
+            <div class="button" id="restore-button">
+                <img class="icon" src="icons/restore-w-10.png" srcset="icons/restore-w-10.png 1x, icons/restore-w-12.png 1.25x, icons/restore-w-15.png 1.5x, icons/restore-w-15.png 1.75x, icons/restore-w-20.png 2x, icons/restore-w-20.png 2.25x, icons/restore-w-24.png 2.5x, icons/restore-w-30.png 3x, icons/restore-w-30.png 3.5x" draggable="false" alt="Restore" @onclick="Restore"/>
+            </div>
+            <div class="button" id="close-button">
+                <img class="icon" src="icons/close-w-10.png" srcset="icons/close-w-10.png 1x, icons/close-w-12.png 1.25x, icons/close-w-15.png 1.5x, icons/close-w-15.png 1.75x, icons/close-w-20.png 2x, icons/close-w-20.png 2.25x, icons/close-w-24.png 2.5x, icons/close-w-30.png 3x, icons/close-w-30.png 3.5x" draggable="false" alt="Close" @onclick="Close"/>
+            </div>
+        </div>
+    </div>
+</header>
+
+<div id="main">
+    <NavMenu/>
+    @Body
+</div>
+
+@code {
+
+    private void Minimize()
+    {
+        if (!HybridSupport.IsElectronActive)
+        {
+            return;
+        }
+        Electron.WindowManager.BrowserWindows.First().Minimize();
+    }
+
+    private void Maximize()
+    {
+        if (!HybridSupport.IsElectronActive)
+        {
+            return;
+        }
+        Electron.WindowManager.BrowserWindows.First().Maximize();
+    }
+
+    private void Restore()
+    {
+        if (!HybridSupport.IsElectronActive)
+        {
+            return;
+        }
+
+        if (_appState.Maximized)
+        {
+            Electron.WindowManager.BrowserWindows.First().Unmaximize();
+            _appState.Maximized = false;
+        }
+        else
+        {
+            Electron.WindowManager.BrowserWindows.First().Maximize();
+            _appState.Maximized = true;
+        }
+        _appState.NotifyStateChanged();
+    }
+
+    private void Close()
+    {
+        if (!HybridSupport.IsElectronActive)
+        {
+            return;
+        }
+        Electron.WindowManager.BrowserWindows.First().Close();
+    }
+}

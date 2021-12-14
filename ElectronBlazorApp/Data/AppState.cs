@@ -4,6 +4,7 @@ namespace ElectronBlazorApp.Data
 {
     public class AppState
     {
+        public bool Maximized { get; set; }
         public string Path { get; set; }
         public string Content { get; set; }
         
