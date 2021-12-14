@@ -1,9 +1,14 @@
+@using ElectronNET.API
 @inherits LayoutComponentBase
 <MudThemeProvider />
-<div class="page">
-    <div class="main">
-        <div class="content px-4">
-            @Body
-        </div>
-    </div>
-</div>
+<MudDialogProvider/>
+<MudSnackbarProvider/>
+<MudLayout>
+    <MudAppBar>
+        Blazor Notes
+        <NavMenu/>
+    </MudAppBar>
+    <MudMainContent>
+        @Body
+    </MudMainContent>
+</MudLayout>

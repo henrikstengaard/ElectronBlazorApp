@@ -31,9 +31,10 @@ namespace ElectronBlazorApp
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddMudServices();
+            services.AddMudBlazorDialog();
             services.AddRazorPages();
             services.AddServerSideBlazor();
-            services.AddSingleton<WeatherForecastService>();
+            services.AddSingleton<AppState>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -63,7 +64,10 @@ namespace ElectronBlazorApp
             
             if (HybridSupport.IsElectronActive)  
             {
-                Task.Run(async () => await CreateWindow());
+                Task.Run(async () =>
+                {
+                    await CreateWindow();
+                });
             }
         }
         
@@ -71,8 +75,16 @@ namespace ElectronBlazorApp
         {
             var window = await Electron.WindowManager.CreateWindowAsync(new BrowserWindowOptions
             {
-                AutoHideMenuBar = true
-            });  
+                Width = 1074,
+                Height = 768,
+                Center = true,
+                BackgroundColor = "#FFFFFF",
+                Frame = false,                
+                WebPreferences = new WebPreferences
+                {
+                    NodeIntegration = true
+                },
+            });
             window.OnClosed += () => {  
                 Electron.App.Quit();  
             };

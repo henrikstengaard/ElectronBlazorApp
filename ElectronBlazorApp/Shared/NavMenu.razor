@@ -1,38 +1,84 @@
-﻿<div class="top-row pl-4 navbar navbar-dark">
-    <a class="navbar-brand" href="">ElectronBlazorApp</a>
-    <button class="navbar-toggler" @onclick="ToggleNavMenu">
-        <span class="navbar-toggler-icon"></span>
-    </button>
-</div>
+﻿@using ElectronNET.API
+@using System.Diagnostics
+@using System.IO
+@using ElectronBlazorApp.Data
+@using ElectronNET.API.Entities
 
-<div class="@NavMenuCssClass" @onclick="ToggleNavMenu">
-    <ul class="nav flex-column">
-        <li class="nav-item px-3">
-            <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
-                <span class="oi oi-home" aria-hidden="true"></span> Home
-            </NavLink>
-        </li>
-        <li class="nav-item px-3">
-            <NavLink class="nav-link" href="counter">
-                <span class="oi oi-plus" aria-hidden="true"></span> Counter
-            </NavLink>
-        </li>
-        <li class="nav-item px-3">
-            <NavLink class="nav-link" href="fetchdata">
-                <span class="oi oi-list-rich" aria-hidden="true"></span> Fetch data
-            </NavLink>
-        </li>
-    </ul>
-</div>
+@inject AppState _appState;
+
+<MudMenu Label="File" Variant="Variant.Outlined" Dense="true">
+    <MudMenuItem OnClick="NewFile">New file</MudMenuItem>
+    <MudMenuItem OnClick="OpenFile">Open file</MudMenuItem>
+    <MudMenuItem OnClick="SaveFile">Save file</MudMenuItem>
+    <MudMenuItem OnClick="Quit">Quit</MudMenuItem>
+</MudMenu>
 
 @code {
-    private bool collapseNavMenu = true;
-
-    private string NavMenuCssClass => collapseNavMenu ? "collapse" : null;
-
-    private void ToggleNavMenu()
+    private Task Quit()
     {
-        collapseNavMenu = !collapseNavMenu;
+        if (!HybridSupport.IsElectronActive)
+        {
+            return Task.CompletedTask;
+        }
+        var mainWindow = Electron.WindowManager.BrowserWindows.FirstOrDefault();
+        if (mainWindow == null)
+        {
+            return Task.CompletedTask;
+        }
+        mainWindow.Close();
+        mainWindow.Destroy();
+        return Task.CompletedTask;
     }
 
+    private Task NewFile()
+    {
+        _appState.Path = string.Empty;
+        _appState.Content = string.Empty;
+        _appState.NotifyStateChanged();
+        return Task.CompletedTask;
+    }
+
+    private async Task OpenFile()
+    {
+        var mainWindow = Electron.WindowManager.BrowserWindows.First();
+        var options = new OpenDialogOptions
+        {
+            Title = "Open file",
+            Filters = new FileFilter[]
+            {
+                new FileFilter { Name = "Text files", Extensions = new string[] {"txt" } }
+            }
+        };
+        var path = (await 
+            Electron.Dialog.ShowOpenDialogAsync(mainWindow, options)).FirstOrDefault();
+        if (string.IsNullOrEmpty(path))
+        {
+            return;
+        }
+        _appState.Path = path;
+        _appState.Content = await File.ReadAllTextAsync(path);
+        _appState.NotifyStateChanged();
+    }
+    
+    private async Task SaveFile()
+    {
+        var mainWindow = Electron.WindowManager.BrowserWindows.First();
+        var options = new SaveDialogOptions
+        {
+            Title = "Save file",
+            Filters = new FileFilter[]
+            {
+                new FileFilter { Name = "Text files", Extensions = new string[] {"txt" } }
+            }
+        };
+        var path = (await 
+            Electron.Dialog.ShowSaveDialogAsync(mainWindow, options));
+        if (string.IsNullOrEmpty(path))
+        {
+            return;
+        }
+        _appState.Path = path;
+        await File.WriteAllTextAsync(_appState.Path, _appState.Content);
+        _appState.NotifyStateChanged();
+    }
 }

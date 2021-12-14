@@ -1,9 +1,9 @@
 @page "/"
-@using ElectronNET.API
-@using ElectronNET.API.Entities
-@using System.IO
+@using ElectronBlazorApp.Data
 
-<CustomTextArea @bind-Value="@_content" @bind-Value:event="ValueChanged"></CustomTextArea>
+@inject AppState _appState;
+
+<CustomTextArea @bind-Value="@_appState.Content" @bind-Value:event="ValueChanged"></CustomTextArea>
 
 @code {
     private string _path = string.Empty;
@@ -11,87 +11,12 @@
     
     protected override Task OnInitializedAsync()
     {
-        ConfigureMenu();
+        _appState.OnChange += async () => await InvokeAsync(StateHasChanged);
         return Task.CompletedTask;
     }
     
-    private void ConfigureMenu()
+    public void Dispose()
     {
-        if (!HybridSupport.IsElectronActive)
-        {
-            return;
-        }
-
-        var menu = new MenuItem[]
-        {
-            new MenuItem
-            {
-                Label = "File", Submenu = new MenuItem[]
-                {
-                    new MenuItem
-                    {
-                        Label = "New file", Accelerator = "CmdOrCtrl+N", Click = async () =>
-                        {
-                            _path = string.Empty;
-                            _content = string.Empty;
-                            await InvokeAsync(StateHasChanged);
-                        }
-                    },
-                    new MenuItem { Label = "Open file", Accelerator = "CmdOrCtrl+O", Click = async () =>
-                    {
-                        var mainWindow = Electron.WindowManager.BrowserWindows.First();
-                        var options = new OpenDialogOptions
-                        {
-                            Title = "Open file",
-                            Filters = new FileFilter[]
-                            {
-                                new FileFilter { Name = "Text files", Extensions = new string[] {"txt" } }
-                            }
-                        };
-                        var path = (await 
-                            Electron.Dialog.ShowOpenDialogAsync(mainWindow, options)).FirstOrDefault();
-                        if (string.IsNullOrEmpty(path))
-                        {
-                            return;
-                        }
-                        mainWindow.SetTitle(path);
-                        _path = path;
-                        _content = await File.ReadAllTextAsync(path);
-                        await InvokeAsync(StateHasChanged);
-                    } },
-                    new MenuItem { Label = "Save file", Accelerator = "CmdOrCtrl+S", Click = async () =>
-                    {
-                        var mainWindow = Electron.WindowManager.BrowserWindows.First();
-                        var options = new SaveDialogOptions
-                        {
-                            Title = "Save file",
-                            Filters = new FileFilter[]
-                            {
-                                new FileFilter { Name = "Text files", Extensions = new string[] {"txt" } }
-                            }
-                        };
-                        var path = (await 
-                            Electron.Dialog.ShowSaveDialogAsync(mainWindow, options));
-                        if (string.IsNullOrEmpty(path))
-                        {
-                            return;
-                        }
-                        _path = path;
-                        mainWindow.SetTitle(path);
-                        await File.WriteAllTextAsync(_path, _content);
-                    } },
-                    new MenuItem { Label = "Quit", Accelerator = "CmdOrCtrl+Q", Click = () =>
-                    {
-                        var mainWindow = Electron.WindowManager.BrowserWindows.First();
-                        mainWindow.Close();
-                        mainWindow.Destroy();
-                    } }
-                }
-            }
-        };
-        
-        Electron.Menu.SetApplicationMenu(menu);
-        Electron.WindowManager.BrowserWindows.First().SetAutoHideMenuBar(false);
-        Electron.WindowManager.BrowserWindows.First().SetMenuBarVisibility(true);
+        _appState.OnChange -= async () => await InvokeAsync(StateHasChanged);
     }
 }
